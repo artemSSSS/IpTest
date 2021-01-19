@@ -1,10 +1,22 @@
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Scanner;
 
 public class IpTest {
+
+    public static long ipToLong(String ipAddress) {
+        String[] ipAddressInArray = ipAddress.split("\\.");
+
+        long result = 0;
+        for (int i = 0; i < ipAddressInArray.length; i++) {
+
+            int power = 3 - i;
+            int ip = Integer.parseInt(ipAddressInArray[i]);
+            result += ip * Math.pow(256, power);
+
+        }
+
+        return result;
+    }
 
     public static void main(String[] args) throws IOException {
         if (args.length < 1) {
@@ -14,88 +26,43 @@ public class IpTest {
 
         String originalInputFile = args[0];
 
-        String inputFile = args[0];
-        String outputFile = Paths.get(inputFile).getParent() + "/out.txt";
+        long result = 0;
 
-        boolean moreWork = false;
+        boolean[] myArray = new boolean[1000000000];
 
-        int count = 0;
-
-        do {
-            moreWork = false;
-
-            FileInputStream inputStream = new FileInputStream(inputFile);
+        for (int i = 0; i < 5; i++){
+            FileInputStream inputStream = new FileInputStream(originalInputFile);
             Scanner sc = new Scanner(inputStream, "UTF-8");
 
-            PrintWriter pw = new PrintWriter(new FileWriter(outputFile));
 
-            String checkStr = null;
             while (sc.hasNextLine()) {
                 String line = sc.nextLine();
-
-                if (line.charAt(line.length() - 1) == '!') {
-                    pw.write(line + System.lineSeparator());
-                    continue;
-                } else if (line.charAt(line.length() - 1) == 'x') {
-                    pw.write(line + System.lineSeparator());
-                    continue;
-                } else {
-                    moreWork = true;
-                    if (checkStr == null) {
-                        pw.write(line + "!" + System.lineSeparator());
-                        checkStr = line;
-                    } else {
-                        if (checkStr.equals(line)) {
-                            pw.write(line + "x" + System.lineSeparator());
-                        } else {
-                            pw.write(line + System.lineSeparator());
-                        }
-                    }
+                long ip = ipToLong(line);
+                if (i == 0 && ip >= 0 && ip < 1000000000) {
+                    myArray[(int)(ip)] = true;
+                } else if ( i == 1 && ip >= 1000000000 && ip < 2000000000) {
+                    myArray[(int)(ip - 1000000000)] = true;
+                } else if ( i == 2 && ip >= 2000000000 && ip < 3000000000L) {
+                    myArray[(int)(ip - 2000000000L)] = true;
+                } else if ( i == 3 && ip >= 3000000000L && ip < 4000000000L) {
+                    myArray[(int)(ip - 3000000000L)] = true;
+                } else if ( i == 4 && ip >= 4000000000L && ip < 5000000000L) {
+                    myArray[(int)(ip - 4000000000L)] = true;
                 }
+            }
+
+            for (int j = 0; j < 1000000000; j++) {
+                if (myArray[j]) {
+                    result += 1;
+                }
+                myArray[j] = false;
             }
 
             inputStream.close();
             sc.close();
-            pw.close();
-
-            if (moreWork) {
-                Files.deleteIfExists(Paths.get(inputFile));
-                inputFile = outputFile;
-
-                if (outputFile.contains("!_1_!")) {
-                    outputFile = outputFile.split("!_1_!")[0] + "!_1_!" + String.valueOf(count);
-                } else {
-                    outputFile = outputFile + "!_1_!" + String.valueOf(count);
-                }
-
-                count += 1;
-            }
-        } while (moreWork);
-
-        Files.deleteIfExists(Paths.get(inputFile));
-
-        FileInputStream inputStream = new FileInputStream(outputFile);
-        Scanner sc = new Scanner(inputStream, "UTF-8");
-
-        PrintWriter pw = new PrintWriter(new FileWriter(inputFile));
-
-        int result = 0;
-        while (sc.hasNextLine()) {
-            String line = sc.nextLine();
-            if (line.charAt(line.length() - 1) == '!'){
-                result += 1;
-            }
-            pw.write(line.substring(0, line.length() - 1) + System.lineSeparator());
         }
-
-        inputStream.close();
-        sc.close();
-        pw.close();
-
-        Files.deleteIfExists(Paths.get(outputFile));
-        Path source = Paths.get(inputFile);
-        Files.move(source, source.resolveSibling(originalInputFile));
 
         System.out.println("There is " + String.valueOf(result) + " unique ip addresses in file " + originalInputFile);
     }
 }
+
