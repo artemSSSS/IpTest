@@ -2,4 +2,4 @@
 
 Usage 
 
-java IpTest "absolute_path_to_file"
+java -Xmx5024m IpTest "absolute_path_to_file"
